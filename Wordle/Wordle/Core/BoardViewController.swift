@@ -7,13 +7,16 @@
 
 import UIKit
 
+protocol BoardViewControllerDataSource: AnyObject {
+    var currentGuesses: [[Character?]] { get }
+    func boxColor(at indexPath: IndexPath) -> UIColor?
+}
+
 class BoardViewController: UIViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDelegate, UICollectionViewDataSource {
-    // 6 guesses with each one holding an array of at most 5 elements that start off as nil
-    var guesses: [[Character?]] = Array(
-        repeating: Array(repeating: nil, count: 5), count: 6
-    )
     
-    let collectionView: UICollectionView = {
+    weak var datasource: BoardViewControllerDataSource?
+    
+    private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumInteritemSpacing = 4
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -38,16 +41,21 @@ class BoardViewController: UIViewController, UICollectionViewDelegateFlowLayout,
         ])
     }
     
+    public func reloadData() {
+        collectionView.reloadData()
+    }
+    
     
     
 }
 
 extension BoardViewController {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return guesses.count
+        return datasource?.currentGuesses.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        let guesses = datasource?.currentGuesses ?? []
         return guesses[section].count
     }
     
@@ -56,9 +64,15 @@ extension BoardViewController {
             fatalError()
         }
 //        cell.configure(with: Character("A"))
-        cell.backgroundColor = nil
+        cell.backgroundColor = datasource?.boxColor(at: indexPath)
         cell.layer.borderWidth = 1
         cell.layer.borderColor = UIColor.systemGray3.cgColor
+        
+        let guesses = datasource?.currentGuesses ?? []
+        if let letter = guesses[indexPath.section][indexPath.row] {
+            cell.configure(with: letter)
+        }
+        
         return cell
     }
     
