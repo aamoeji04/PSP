@@ -26,7 +26,7 @@ struct ContentView: View {
                 }
                 
                 Image("dealbutton")
-                
+                 Spacer()
                 HStack {
                     VStack {
                         Text("Player")
